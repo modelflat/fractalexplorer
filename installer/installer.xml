@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- More info at http://doc.qt.io/qtinstallerframework/ifw-globalconfig.html -->
+<Installer>
+    <Name>WeebP UI</Name>
+    <Version>1.0.0</Version>
+    <Title>WeebP UI Setup</Title>
+    <RunProgram>@TargetDir@/WeebP-UI.exe</RunProgram>
+    <RunProgramDescription>weebp use interface</RunProgramDescription>
+    <StartMenuDir>Some Application Entry Dir</StartMenuDir>
+    <AllowNonAsciiCharacters>true</AllowNonAsciiCharacters>
+    <TargetDir>@HomeDir@/WeebP-UI</TargetDir>
+    <AdminTargetDir>@RootDir@/WeebP-UI</AdminTargetDir>
+</Installer>
