@@ -12,12 +12,41 @@ find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Core REQUIRED)
 
 add_executable(${PROJECT_NAME}
-               src/main.cpp
+
+               app/main.cpp
+
+               app/core/Evolution.hpp
+               app/core/OpenCLBackend.hpp
+               app/core/OpenCLBackend.cpp
+               app/core/ComputableImage.hpp
+               app/core/Utility.hpp
+
+               app/core/clc/CLC_Sources.hpp
+               app/core/clc/CLC_Sources.cpp
+               app/core/clc/CLC_Random.hpp
+               app/core/clc/CLC_Definitions.hpp
+               app/core/clc/CLC_NewtonFractal.hpp
+
+               app/core/glsl/GLSL_Render.hpp
+               app/core/glsl/GLSL_RenderStatisticalClear.hpp
+               app/core/glsl/GLSL_Sources.cpp
+               app/core/glsl/GLSL_Sources.hpp
+
                )
+
+include_directories(app/core)
+
 
 include(cmake/QtDeploy.cmake)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core Qt5::Widgets)
+include_directories(${ADDITIONAL_INCLUDES}) # TODO this is a workaround for using CLion IDE for highlighting
+
+find_package(OpenCL)
+include_directories(${OpenCL_INCLUDE_DIR})
+
+
+
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core Qt5::Widgets ${OpenCL_LIBRARY})
 
 if (CMAKE_BUILD_TYPE MATCHES Release)
     create_target_installer(
