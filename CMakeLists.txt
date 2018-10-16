@@ -13,12 +13,13 @@ find_package(Qt5Core REQUIRED)
 
 add_executable(${PROJECT_NAME}
 
-               app/main.cpp
+               app/App.cpp
 
-               app/core/Evolution.hpp
                app/core/OpenCLBackend.hpp
                app/core/OpenCLBackend.cpp
+
                app/core/ComputableImage.hpp
+               app/core/Evolution.hpp
                app/core/Utility.hpp
 
                app/core/clc/CLC_Sources.hpp
@@ -36,15 +37,12 @@ add_executable(${PROJECT_NAME}
 
 include_directories(app/core)
 
-
 include(cmake/QtDeploy.cmake)
 
 include_directories(${ADDITIONAL_INCLUDES}) # TODO this is a workaround for using CLion IDE for highlighting
 
 find_package(OpenCL)
 include_directories(${OpenCL_INCLUDE_DIR})
-
-
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core Qt5::Widgets ${OpenCL_LIBRARY})
 
