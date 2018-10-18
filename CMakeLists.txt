@@ -33,7 +33,7 @@ add_executable(${PROJECT_NAME}
                app/core/glsl/GLSL_Sources.cpp
                app/core/glsl/GLSL_Sources.hpp
 
-               )
+               app/ui/ComputableImageWidget.hpp)
 
 include_directories(app/core)
 

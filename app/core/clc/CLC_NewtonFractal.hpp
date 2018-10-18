@@ -43,9 +43,9 @@ int solve_cubic_newton_fractal_optimized(real2 a, real2 c, real precision, int r
 
     // ====================
     real2 alpha[3];
-    ccbrt(base_alpha, alpha);
+    complex_cbrt(base_alpha, alpha);
     real2 beta[3];
-    ccbrt(base_beta, beta);
+    complex_cbrt(base_beta, beta);
     // now we have alpha & beta values, lets combine them such as:
     // alpha[0]*beta[i] = -p / 3;
     int idx = -1;

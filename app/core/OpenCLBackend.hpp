@@ -164,7 +164,7 @@ public:
 
     const KernelSettings& findKernelSettings(KernelId id);
 
-    void registerKernel(KernelId id, KernelSettings settings);
+    void registerKernel(KernelId id, KernelSettings&& settings);
 
     void clearCache();
 
@@ -174,5 +174,9 @@ public:
  * Keystroke saviour
  */
 using OpenCLBackendPtr = std::shared_ptr<OpenCLBackend>;
+
+inline static bool memoryBelongsToContext(const cl::Memory& memory, const cl::Context& context) {
+    return memory.getInfo<CL_MEM_CONTEXT>()() == context();
+}
 
 #endif //FRACTALEXPLORER_OPENCLBACKEND_HPP

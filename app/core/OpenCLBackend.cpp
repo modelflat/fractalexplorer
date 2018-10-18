@@ -1,6 +1,8 @@
 #include "OpenCLBackend.hpp"
 #include "Utility.hpp"
 
+#include <algorithm>
+
 cl_uint detectImageArgIdx(const ArgNameMap& map) {
     auto it = map.find("image");
     if (it != map.end()) {
@@ -73,7 +75,28 @@ KernelWithMetainfo OpenCLBackend::compileKernel(KernelId id) {
     cl::Program prg (ctx, kernelSettings.sourceCode);
 
     // TODO validate && handle and rethrow exceptions here
-    auto err = prg.build(join(kernelSettings.compileOptions.begin(), kernelSettings.compileOptions.end()).c_str());
+    try {
+        prg.build(join(
+            kernelSettings.compileOptions.begin(),
+            kernelSettings.compileOptions.end()).c_str());
+    } catch (const cl::Error& cle) {
+        std::stringstream ss;
+
+        ss << "OpenCL error has occured while building program. ";
+        ss << "Error code is " << cle.err()
+        << ", and the error says '" << cle.what() << "'\n";
+
+
+        auto devs = ctx.getInfo<CL_CONTEXT_DEVICES>();
+        std::for_each(devs.begin(), devs.end(), [&ss, &prg] (cl::Device device) {
+            ss << "Build options: " << prg.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(device) << '\n';
+            ss << "Build log for device " << device.getInfo<CL_DEVICE_NAME>() << ":\n\n";
+            ss << prg.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << '\n';
+        });
+
+        throw std::runtime_error(ss.str().c_str());
+    }
+
     auto kernel = cl::Kernel { prg, id.src.c_str() };
 
     auto nameMap = mapNamesToArgIndices(kernel);
@@ -91,13 +114,13 @@ KernelWithMetainfo OpenCLBackend::compileKernel(KernelId id) {
 const KernelSettings &OpenCLBackend::findKernelSettings(KernelId id) {
     auto kernelSettingsIt = this->registry_.find(id);
     if (kernelSettingsIt == registry_.end()) {
-        throw std::runtime_error(""); // TODO Meaningful exception;
+        throw std::runtime_error("No kernel with such id"); // TODO Meaningful exception;
     }
     return kernelSettingsIt->second;
 }
 
-void OpenCLBackend::registerKernel(KernelId id, KernelSettings settings) {
-    // todo implement
+void OpenCLBackend::registerKernel(KernelId id, KernelSettings&& settings) {
+    registry_.try_emplace(id, std::forward<KernelSettings>(settings));
 }
 
 void OpenCLBackend::clearCache() {

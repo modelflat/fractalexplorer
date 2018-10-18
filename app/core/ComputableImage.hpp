@@ -69,16 +69,17 @@ public:
     using RangeType = typename DimensionPolicy::RangeType;
     using ImageType = typename DimensionPolicy::ImageType;
 
-    OpenCLComputableImage(RangeType dimensions, OpenCLBackendPtr backend) : dimensions_(dimensions), backend_(backend) {
-        auto ctx = backend->currentContext();
-        image_ = DimensionPolicy::createImage(ctx, dimensions);
+    OpenCLComputableImage(OpenCLBackendPtr backend, RangeType dimensions) : dimensions_(dimensions) {
+        recreateImageIfNeeded(backend, dimensions);
     }
 
     template<typename ... KernelArgs>
-    void compute(KernelId id, const Args& args) {
-        auto queue = backend_->currentQueue();
-        auto compiled = backend_->compileKernel(kernelId);
-        auto localRange = backend_->findKernelSettings(kernelId).localRange;
+    void compute(OpenCLBackendPtr backend, KernelId id, const Args& args) {
+        auto queue = backend->currentQueue();
+        auto compiled = backend->compileKernel(kernelId);
+        auto localRange = backend->findKernelSettings(kernelId).localRange;
+
+        recreateImageIfNeeded(backend, dimensions_);
 
         compiled.kernel.setArg(compiled.imageArgIdx, image_);
 
@@ -92,20 +93,26 @@ public:
 
         applyArgsToKernel(compiled, args);
 
-        DimensionPolicy::enqueueKernel(backend_, id, dimensions_, image_, args);
+        DimensionPolicy::enqueueKernel(backend->currentQueue(), compiled.kernel, localRange, dimensions_);
     }
 
     /**
      * Clears this image with specified color.
      */
-    void clear(Color color={1.0f, 1.0f, 1.0f, 1.0f}) {
+    void clear(OpenCLBackendPtr backend, Color color={1.0f, 1.0f, 1.0f, 1.0f}) {
+        recreateImageIfNeeded(backend, dimensions_);
         cl::size_t<3> origin, region = dimensions_.makeRegion();
-        backend_->currentQueue().enqueueFillImage(image_, color, origin, region);
+        backend->currentQueue().enqueueFillImage(image_, color, origin, region);
     }
 
 private:
 
-    OpenCLBackendPtr backend_;
+    void recreateImageIfNeeded(OpenCLBackendPtr backend, RangeType dimensions) {
+        if (image_() == NULL || memoryBelongsToContext(image_, backend->currentContext())) {
+            image_ = DimensionPolicy::createImage(backend->currentContext(), dimensions);
+        }
+    }
+
     RangeType dimensions_;
     ImageType image_;
 
