@@ -82,7 +82,7 @@ KernelWithMetainfo OpenCLBackend::compileKernel(KernelId id) {
     } catch (const cl::Error& cle) {
         std::stringstream ss;
 
-        ss << "OpenCL error has occured while building program. ";
+        ss << "OpenCL error has occurred while building program. ";
         ss << "Error code is " << cle.err()
         << ", and the error says '" << cle.what() << "'\n";
 

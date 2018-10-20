@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     OpenCLComputableImage<Dim_2D> img(backend, Range<2>{512, 512});
 
     try {
-        backend->compileKernel(id);
+        backend->compileKernel({ "newton_fractal", "default" });
     } catch (const std::exception &e) {
         std::cout << "Exception: " << e.what() << std::endl;
     }

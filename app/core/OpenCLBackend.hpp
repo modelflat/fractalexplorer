@@ -105,15 +105,23 @@ class KernelArg {
 public:
 
     KernelArg(int32_t v) : typeTag(KernelArgType::I32), i32(v) {}
+
     KernelArg(int64_t v) : typeTag(KernelArgType::I64), i64(v) {}
+
     KernelArg(float v) : typeTag(KernelArgType::F32), f32(v) {}
+
     KernelArg(double v) : typeTag(KernelArgType::F64), f64(v) {}
+
     KernelArg(float vx, float vy) : typeTag(KernelArgType::V2F32), v2f32( {vx, vy} ) {}
+
     KernelArg(double vx, double vy) : typeTag(KernelArgType::V2F64), v2f64( {vx, vy} ) {}
+
     KernelArg(float vx, float vy, float vz) : typeTag(KernelArgType::V3F32), v3f32( {vx, vy, vz} ) {}
+
     KernelArg(double vx, double vy, double vz) : typeTag(KernelArgType::V3F64), v3f64( {vx, vy, vz} ) {}
 
     void apply(cl::Kernel& kernel, cl_uint idx) const {
+        // optimized into jump table... hopefully
         switch (typeTag) {
             case KernelArgType::I32: kernel.setArg(idx, this->i32); break;
             case KernelArgType::I64: kernel.setArg(idx, this->i64); break;

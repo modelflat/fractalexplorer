@@ -1,3 +1,9 @@
-[submodule "triSYCL"]
-	path = triSYCL
-	url = https://github.com/trisycl/triSYCL
+[submodule "libs/triSYCL"]
+	path = libs/triSYCL
+	url = git@github.com:triSYCL/triSYCL.git
+[submodule "libs/spdlog"]
+	path = libs/spdlog
+	url = https://github.com/gabime/spdlog
+[submodule "libs/asyncfuture"]
+	path = libs/asyncfuture
+	url = https://github.com/benlau/asyncfuture
