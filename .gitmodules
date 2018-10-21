@@ -7,3 +7,6 @@
 [submodule "libs/asyncfuture"]
 	path = libs/asyncfuture
 	url = https://github.com/benlau/asyncfuture
+[submodule "libs/fmt"]
+	path = libs/fmt
+	url = https://github.com/fmtlib/fmt

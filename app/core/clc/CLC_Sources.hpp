@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <CL/cl.hpp>
+#include "../OpenCL.hpp"
 
 static constexpr const char* STDLIB = "stdlib";
 

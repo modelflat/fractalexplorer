@@ -1,7 +1,10 @@
 #include "OpenCLBackend.hpp"
 #include "Utility.hpp"
+#include "OpenCLKernelUtils.hpp"
 
 #include <algorithm>
+
+#include <spdlog/spdlog.h>
 
 cl_uint detectImageArgIdx(const ArgNameMap& map) {
     auto it = map.find("image");
@@ -26,36 +29,6 @@ std::vector<cl_uint> detectImageDimensionalArgIdxs(const ArgNameMap& map) {
         depth = it != map.end() ? it -> second : 3;
     }
     return { width, height, depth };
-}
-
-ArgNameMap mapNamesToArgIndices(const cl::Kernel &kernel) {
-    auto numArgs = kernel.getInfo<CL_KERNEL_NUM_ARGS>();
-    ArgNameMap res;
-    for (cl_uint i = 0; i < numArgs; ++i) {
-        auto argName = kernel.getArgInfo<CL_KERNEL_ARG_NAME>(i);
-        res[argName] = i;
-    }
-    return res;
-}
-
-void applyArgsToKernel(KernelWithMetainfo& kernel, const Args &args) {
-    for (const auto& [argId, argValue] : args) {
-        auto [name, idx] = argId;
-        size_t val;
-        if (name) {
-            auto it = kernel.param2name.find(name.value());
-            if (it == kernel.param2name.end()) {
-                throw std::runtime_error("No argument named ...");
-            }
-            val = it->second;
-        } else {
-            if (!idx) {
-                throw std::runtime_error("Invalid argument specification, neither name, nor index was provided");
-            }
-            val = idx.value();
-        }
-        argValue.apply(kernel.kernel, static_cast<cl_uint>(val));
-    }
 }
 
 OpenCLBackend::OpenCLBackend() {
@@ -85,7 +58,6 @@ KernelWithMetainfo OpenCLBackend::compileKernel(KernelId id) {
         ss << "OpenCL error has occurred while building program. ";
         ss << "Error code is " << cle.err()
         << ", and the error says '" << cle.what() << "'\n";
-
 
         auto devs = ctx.getInfo<CL_CONTEXT_DEVICES>();
         std::for_each(devs.begin(), devs.end(), [&ss, &prg] (cl::Device device) {
@@ -126,4 +98,3 @@ void OpenCLBackend::registerKernel(KernelId id, KernelSettings&& settings) {
 void OpenCLBackend::clearCache() {
     compileCache_.clear();
 }
-

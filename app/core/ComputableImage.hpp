@@ -73,8 +73,7 @@ public:
         recreateImageIfNeeded(backend, dimensions);
     }
 
-    template<typename ... KernelArgs>
-    void compute(OpenCLBackendPtr backend, KernelId id, const Args& args) {
+    void compute(OpenCLBackendPtr backend, KernelId id, const KernelArgs& args) {
         auto queue = backend->currentQueue();
         auto compiled = backend->compileKernel(kernelId);
         auto localRange = backend->findKernelSettings(kernelId).localRange;

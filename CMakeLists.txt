@@ -11,6 +11,8 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Core REQUIRED)
 
+add_definitions(-DNOMINMAX)
+
 add_executable(${PROJECT_NAME}
 
                app/App.cpp
@@ -33,9 +35,21 @@ add_executable(${PROJECT_NAME}
                app/core/glsl/GLSL_Sources.cpp
                app/core/glsl/GLSL_Sources.hpp
 
-               app/ui/ComputableImageWidget.hpp)
+               app/ui/ComputableImageWidget.hpp
+
+               app/core/OpenCL.hpp
+               app/core/CoreLogger.hpp
+               app/core/OpenCLKernelUtils.cpp
+               app/core/OpenCLKernelUtils.hpp
+
+               )
 
 include_directories(app/core)
+
+include_directories(libs/spdlog/include)
+include_directories(libs/triSYCL/include)
+include_directories(libs/asyncfuture)
+include_directories(libs/fmt/include)
 
 include(cmake/QtDeploy.cmake)
 
