@@ -38,11 +38,10 @@ add_executable(${PROJECT_NAME}
                app/ui/ComputableImageWidget.hpp
 
                app/core/OpenCL.hpp
-               app/core/CoreLogger.hpp
                app/core/OpenCLKernelUtils.cpp
                app/core/OpenCLKernelUtils.hpp
 
-               )
+               app/core/Utility.cpp)
 
 include_directories(app/core)
 
@@ -50,6 +49,9 @@ include_directories(libs/spdlog/include)
 include_directories(libs/triSYCL/include)
 include_directories(libs/asyncfuture)
 include_directories(libs/fmt/include)
+
+string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+add_definitions("-DSOURCE_PATH_SIZE=${SOURCE_PATH_SIZE}")
 
 include(cmake/QtDeploy.cmake)
 

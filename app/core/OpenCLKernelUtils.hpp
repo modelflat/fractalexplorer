@@ -6,6 +6,9 @@
 #include <variant>
 #include <utility>
 #include <unordered_map>
+#include <optional>
+
+std::string to_string(const cl::Kernel& kernel);
 
 /**
  * Type to actually store arg value in runtime.
@@ -120,5 +123,25 @@ struct KernelSettings {
     const std::vector<std::string> compileOptions;
     const cl::NDRange localRange = cl::NullRange;
 };
+
+/**
+ * Type enum for runtime type detection in kernels.
+ */
+enum class KernelArgType {
+    Unknown         = 0,
+    Int32           = 1,
+    Int64           = 2,
+    Float32         = 3,
+    Float64         = 4,
+    Vector2Float32  = 5,
+    Vector2Float64  = 6,
+    Vector3Float32  = 7,
+    Vector3Float64  = 8,
+
+    Image           = 9,
+    Buffer          = 10,
+};
+
+std::vector<KernelArgType> detectArgumentTypes(const cl::Kernel& kernel);
 
 #endif //FRACTALEXPLORER_OPENCLKERNELUTILS_HPP

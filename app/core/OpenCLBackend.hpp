@@ -9,15 +9,9 @@
 #include <unordered_map>
 #include <optional>
 
-
-
-using KernelSourceId = std::string;
-
-using SettingsId = std::string;
-
 struct KernelId {
-    KernelSourceId src;
-    SettingsId settings;
+    std::string src;
+    std::string settings;
 
     bool operator==(const KernelId& other) const {
         return other.src == src && other.settings == settings;
@@ -36,8 +30,8 @@ struct CompilationContext {
 namespace std {
     template<> struct hash<KernelId> {
         size_t operator()(const KernelId& id) const noexcept {
-            auto h1 = std::hash <KernelSourceId> {} (id.src);
-            auto h2 = std::hash <SettingsId> {} (id.settings);
+            auto h1 = std::hash <std::string> {} (id.src);
+            auto h2 = std::hash <std::string> {} (id.settings);
             return 31 * h1 + h2; // classic hash combine
         }
     };

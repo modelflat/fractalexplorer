@@ -6,6 +6,9 @@
 
 #include "clc/CLC_Sources.hpp"
 #include "ComputableImage.hpp"
+#include "Utility.hpp"
+
+LOGGER()
 
 auto id = KernelId { "newton_fractal", "default" };
 
@@ -20,11 +23,12 @@ void registerDefaultAlgorithms(OpenCLBackendPtr backend) {
     newton.insert(std::end(newton), newtonSpecific.begin(), newtonSpecific.end());
 
     backend->registerKernel(
-        id, KernelSettings { newton, { "" } }
+        id, KernelSettings { newton, { "-DUSE_DOUBLE_PRECISION" } }
     );
 }
 
 int main(int argc, char *argv[]) {
+
     QApplication a(argc, argv);
 
     std::cout << "CL: " << cl::Platform::getDefault().getInfo<CL_PLATFORM_NAME>() << std::endl;
@@ -42,7 +46,7 @@ int main(int argc, char *argv[]) {
     try {
         backend->compileKernel({ "newton_fractal", "default" });
     } catch (const std::exception &e) {
-        std::cout << "Exception: " << e.what() << std::endl;
+        logger->error(fmt::format("Exception: {}", e.what()));
     }
 
     img.clear(backend);

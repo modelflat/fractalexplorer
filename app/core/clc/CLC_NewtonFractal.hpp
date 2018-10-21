@@ -90,8 +90,10 @@ static constexpr std::string_view NEWTON_FRACTAL_SOURCE { R"CL(
 
 #if (defined(cl_khr_fp64) && defined(USE_DOUBLE_PRECISION))
     #define PRECISION 1e-9
+    #define to_uint(x) (uint)(as_ulong(x))
 #else
     #define PRECISION 1e-4
+    #define to_uint(x) as_uint(x)
 #endif
 
 #define DYNAMIC_COLOR 0
@@ -121,8 +123,8 @@ kernel void newton_fractal(
     // plane bounds
     real min_x, real max_x, real min_y, real max_y,
     // fractal parameters
-    global real* C_const, int backward, int t, real h,
-    // how many initial points select
+    real2 C, int backward, int t, real h,
+    // how many initial points to select
     uint runs_count,
     // how many times solve equation for certain initial point
     uint points_count,
@@ -131,12 +133,10 @@ kernel void newton_fractal(
     // seed - seed value for pRNG; see "random.clh"
     ulong seed,
     // color. this color will only be used as static!
-    global float4* color_in,
+    float3 color_in,
     // image buffer for output
     write_only image2d_t out_image)
 {
-    // const C
-    const real2 C = {C_const[0], C_const[1]};
     // color
     #if (DYNAMIC_COLOR)
         float4 color = {fabs(sin(PI * h / 3.)), fabs(cos(PI * h / 3.)), 0.0, 0.0};
@@ -175,7 +175,7 @@ kernel void newton_fractal(
         // iterate through solutions of cubic equation
         for (int i = 0; i < points_count; ++i) {
             // compute next point:
-            uint root_number = (as_uint(random(&rng_state)) >> 7) % 3;
+            uint root_number = (to_uint(random(&rng_state)) >> 7) % 3;
             if (backward) {
                 a = starting_point * a_modifier;
                 solve_cubic_newton_fractal_optimized(a, c, 1e-8, root_number, roots);

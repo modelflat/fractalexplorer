@@ -18,6 +18,9 @@ static constexpr std::string_view DEFINITIONS_SOURCE { R"CL(
     #define COMPL_ONE_2nd_ROOT_REAL -0.5
     #define COMPL_ONE_2nd_ROOT_IMAG 0.866025403784438596
 #else
+    #ifdef USE_DOUBLE_PRECISION
+    #warning Double precision requested but not supported by the device
+    #endif
     #define real  float
     #define real2 float2
     #define PI M_PI_F
