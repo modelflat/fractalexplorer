@@ -3,6 +3,7 @@
 #include <QOpenGLWidget>
 #include <QApplication>
 #include <QPushButton>
+#include <app/ui/KernelArgWidget.hpp>
 
 #include "clc/CLC_Sources.hpp"
 #include "ComputableImage.hpp"
@@ -13,7 +14,6 @@ LOGGER()
 auto id = KernelId { "newton_fractal", "default" };
 
 void registerDefaultAlgorithms(OpenCLBackendPtr backend) {
-
     cl::Program::Sources newton;
     newton.reserve(4);
     // TODO abstract?
@@ -28,12 +28,12 @@ void registerDefaultAlgorithms(OpenCLBackendPtr backend) {
 }
 
 int main(int argc, char *argv[]) {
-
     QApplication a(argc, argv);
 
     std::cout << "CL: " << cl::Platform::getDefault().getInfo<CL_PLATFORM_NAME>() << std::endl;
 
-    QPushButton hello("Hello world!", nullptr);
+    NumberWidget hello("arg_name", KernelArgType::Float32, {}, {});
+
     hello.resize(640, 480);
     hello.show();
 

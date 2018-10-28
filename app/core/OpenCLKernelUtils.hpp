@@ -137,7 +137,6 @@ enum class KernelArgType {
     Vector2Float64  = 6,
     Vector3Float32  = 7,
     Vector3Float64  = 8,
-
     Image           = 9,
     Buffer          = 10,
 };

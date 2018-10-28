@@ -41,7 +41,7 @@ add_executable(${PROJECT_NAME}
                app/core/OpenCLKernelUtils.cpp
                app/core/OpenCLKernelUtils.hpp
 
-               app/core/Utility.cpp)
+               app/core/Utility.cpp app/ui/KernelArgWidget.cpp app/ui/KernelArgWidget.hpp)
 
 include_directories(app/core)
 

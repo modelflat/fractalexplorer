@@ -37,13 +37,10 @@ std::string getBuildLog(const cl::Context &ctx, const cl::Program& prg) {
     std::stringstream ss;
     auto devs = ctx.getInfo<CL_CONTEXT_DEVICES>();
     std::for_each(devs.begin(), devs.end(), [&ss, &prg] (cl::Device device) {
-        ss << "=== Options: " << prg.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(device) << '\n';
         auto log = prg.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
         if (!std::all_of(log.begin(), log.end(), [](auto&& arg) {return std::isspace(arg);})) {
             ss << "=== Build log for device " << device.getInfo<CL_DEVICE_NAME>() << ":\n";
             ss << log << '\n';
-        } else {
-            ss << "=== Empty build log for device " << device.getInfo<CL_DEVICE_NAME>() << "\n";
         }
     });
     return ss.str();
@@ -66,16 +63,17 @@ KernelWithMetainfo OpenCLBackend::compileKernel(KernelId id) {
         return foundInCache->second;
     }
 
-    logger->info("Not in cache. Compiling kernel...");
     const KernelSettings& kernelSettings = findKernelSettings(id);
 
     cl::Program prg (ctx, kernelSettings.sourceCode);
 
-    // TODO validate && handle and rethrow exceptions here
+    auto options = join(kernelSettings.compileOptions.begin(), kernelSettings.compileOptions.end());
+    logger->info(
+        fmt::format("Not in cache. Building program with options: {}", options)
+    );
+
     try {
-        prg.build(join(
-            kernelSettings.compileOptions.begin(),
-            kernelSettings.compileOptions.end()).c_str());
+        prg.build(options.c_str());
     } catch (const cl::Error& cle) {
         std::stringstream ss;
 
@@ -92,9 +90,11 @@ KernelWithMetainfo OpenCLBackend::compileKernel(KernelId id) {
 
     logger->info("Program successfully built");
     auto buildLog = getBuildLog(ctx, prg);
-    if (!buildLog.empty()) {
-        logger->info(fmt::format("Printing build log:\n{}", buildLog));
-    }
+    logger->info(
+        fmt::format("Build logs:{}{}",
+            buildLog.empty() ? " " : "\n",
+            buildLog.empty() ? "all clear!" : buildLog)
+    );
 
     auto kernel = cl::Kernel { prg, id.src.c_str() };
 
