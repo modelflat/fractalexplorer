@@ -6,11 +6,11 @@
 #include <QWidget>
 #include <QGroupBox>
 #include <QLineEdit>
+#include <QSlider>
+#include <QLabel>
+#include <QtWidgets/QPushButton>
 
-#include <algorithm>
-#include <vector>
-
-class IArgProvider {
+struct IArgProvider {
     virtual std::optional<KernelArgValue> value() = 0;
 };
 
@@ -32,12 +32,46 @@ public:
     NumberWidget(
         const QString& name,
         KernelArgType valueType,
-        std::optional<KernelArgValue> minValue,
-        std::optional<KernelArgValue> maxValue,
         QWidget* parent = nullptr);
 
-private:
-    virtual std::optional<KernelArgValue> value();
+    std::optional<KernelArgValue> value() override;
+
+signals:
+
+    void valueChanged(KernelArgValue);
+
+};
+
+class VectorWidget : public ArgProviderWidget {
+
+    Q_OBJECT
+
+    size_t size_;
+    KernelArgType valueType_;
+    QString header_;
+    QVector<QPair<KernelArgValue, KernelArgValue>> minMaxPairs_;
+
+    QGroupBox* enclosingGroupBox_;
+    QVector<QLabel*> componentLabels_;
+    QVector<QSlider*> sliders_;
+    QPushButton* extrasButton_;
+
+public:
+
+    VectorWidget(
+        size_t size, KernelArgType valueType, QString header,
+        QVector<QPair<KernelArgValue, KernelArgValue>> constraints
+    );
+
+    VectorWidget(
+        KernelArgType valueType, QString header, QPair<KernelArgValue, KernelArgValue> constraints
+    );
+
+    std::optional<KernelArgValue> value() override;
+
+    void setConstraints(size_t componentIdx, QPair<KernelArgValue, KernelArgValue> newConstraints);
+
+    void setConstraints(QPair<KernelArgValue, KernelArgValue> newConstraints);
 
 signals:
 
@@ -47,13 +81,12 @@ signals:
 
 class KernelArgWidget : public QWidget {
 
-    QVector<std::unique_ptr<ArgProviderWidget>> argProviders;
+    QVector<ArgProviderWidget*> argProviders;
 
 public:
 
-    KernelArgWidget(std::vector<KernelArgType>&& argTypes, QWidget* parent);
+    KernelArgWidget(ArgsTypesWithNames&& argTypes, QWidget* parent);
 
 };
-
 
 #endif //FRACTALEXPLORER_KERNELARGWIDGET_HPP

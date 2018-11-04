@@ -61,7 +61,7 @@ class OpenCLBackend {
 
     cl::CommandQueue queue;
 
-    std::unordered_map<KernelId, KernelSettings> registry_;
+    std::unordered_map<KernelId, KernelBase> registry_;
 
     std::unordered_map<CompilationContext, KernelWithMetainfo> compileCache_;
 
@@ -73,11 +73,14 @@ public:
 
     inline cl::CommandQueue currentQueue() noexcept { return queue; }
 
-    KernelWithMetainfo compileKernel(KernelId id);
+    KernelWithMetainfo compileKernel(KernelId);
 
-    const KernelSettings& findKernelSettings(KernelId id);
+    const KernelBase& findKernelBase(KernelId) const;
 
-    void registerKernel(KernelId id, KernelSettings&& settings);
+    /**
+     * Make mapping id -> base
+     */
+    void registerKernel(KernelId, KernelBase&&);
 
     void clearCache();
 

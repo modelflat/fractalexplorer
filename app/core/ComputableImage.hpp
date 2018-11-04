@@ -76,7 +76,7 @@ public:
     void compute(OpenCLBackendPtr backend, KernelId id, const KernelArgs& args) {
         auto queue = backend->currentQueue();
         auto compiled = backend->compileKernel(kernelId);
-        auto localRange = backend->findKernelSettings(kernelId).localRange;
+        auto localRange = backend->findKernelBase(kernelId).localRange;
 
         recreateImageIfNeeded(backend, dimensions_);
 
