@@ -66,7 +66,10 @@ std::optional<KernelArgValue> NumberWidget::value() {
     return parseNumericValue(valueType_, text.toStdString());
 }
 
-KernelArgWidget::KernelArgWidget(ArgsTypesWithNames &&argTypes, QWidget *parent = nullptr) : QWidget(parent) {
+KernelArgWidget::KernelArgWidget(
+    ArgsTypesWithNames &&argTypes, KernelArgProperties<UIProperties> conf,
+    QWidget *parent) : QWidget(parent) {
+
     std::transform(argTypes.begin(), argTypes.end(), std::back_inserter(argProviders), [this](auto& argTypeAndName) {
         auto [type, name] = argTypeAndName;
         return new NumberWidget( QString::fromStdString(name), type, this );

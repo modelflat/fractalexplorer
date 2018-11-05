@@ -372,6 +372,10 @@ public:
         argProps_[findArgIndex(argName, nameMap_)] = newProp;
     }
 
+    inline ArgsTypesWithNames detectArgTypesAndNames() const {
+        return detectArgumentTypesAndNames(kernel_);
+    }
+
 };
 
 #endif //FRACTALEXPLORER_OPENCLKERNELUTILS_HPP

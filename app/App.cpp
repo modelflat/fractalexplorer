@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QPushButton>
 #include <app/ui/KernelArgWidget.hpp>
+#include <app/ui/ComputableImageWidget.hpp>
 
 #include "clc/CLC_Sources.hpp"
 #include "ComputableImage.hpp"
@@ -61,7 +62,11 @@ int main(int argc, char *argv[]) {
 
     auto honey = detectArgumentTypesAndNames(kernel.kernel());
 
-    confStorage->findOrParseConfiguration(id, honey);
+    auto [strConf, conf] = confStorage->findOrParseConfiguration(id, honey);
+    (void)strConf;
+
+    ComputableImageWidget2D img (backend, {512, 512}, id);
+    KernelArgWidget params (honey, conf);
 
     QSlider hello(nullptr);
     hello.show();

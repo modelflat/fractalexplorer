@@ -79,13 +79,26 @@ signals:
 
 };
 
+struct UIProperties {
+
+    bool hidden;
+
+    static UIProperties fromStream(std::istream& str) {
+        UIProperties res;
+        int t; str >> t;
+        res.hidden = t != 0;
+        return res;
+    }
+
+};
+
 class KernelArgWidget : public QWidget {
 
     QVector<ArgProviderWidget*> argProviders;
 
 public:
 
-    KernelArgWidget(ArgsTypesWithNames&& argTypes, QWidget* parent);
+    KernelArgWidget(ArgsTypesWithNames&& argTypes, KernelArgProperties<UIProperties> conf, QWidget* parent = nullptr);
 
 };
 
