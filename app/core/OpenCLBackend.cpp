@@ -13,31 +13,20 @@ OpenCLBackend::OpenCLBackend() {
     queue = cl::CommandQueue::getDefault();
 }
 
-KernelWithMetainfo OpenCLBackend::compileKernel(KernelId id) {
+cl::Kernel OpenCLBackend::compileCLKernel(KernelId id) {
     logger->info(
         fmt::format("Kernel compilation requested ({}, {}). Looking in cache...", id.src, id.settings)
-    );
+                );
     auto foundInCache = this->compileCache_.find(CompilationContext { id, ctx });
     if (foundInCache != compileCache_.end()) {
         logger->info(
             fmt::format("Kernel ({}, {}) was found in cache!", id.src, id.settings)
-        );
+                    );
         return foundInCache->second;
     }
 
     // build a kernel from base
-    cl::Kernel kernel { findKernelBase(id).build(ctx), id.src.c_str() };
-
-    auto nameMap = mapNamesToArgIndices(kernel);
-
-    KernelWithMetainfo result {
-        kernel,
-        detectImageArgIdx(nameMap),
-        detectImageDimensionalArgIdxs(nameMap),
-        nameMap
-    };
-
-    return result;
+    return { findKernelBase(id).build(ctx), id.src.c_str() };
 }
 
 const KernelBase &OpenCLBackend::findKernelBase(KernelId id) const {

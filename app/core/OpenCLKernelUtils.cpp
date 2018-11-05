@@ -146,7 +146,7 @@ KernelBase::KernelBase(
 cl::Program KernelBase::build(const cl::Context& ctx) const {
     cl::Program prg (ctx, sourceCode_);
 
-    auto options = join(compileOptions_.begin(), compileOptions_.end());
+    auto options = absl::StrJoin(compileOptions_.begin(), compileOptions_.end(), " ");
 
     logger->info(fmt::format("Building program with options: {}", options));
 
@@ -253,7 +253,7 @@ std::tuple<
                 logger->error(err);
                 throw PropertyParsingError(err);
             }
-            index = static_cast<cl_uint>(std::distance(it, args.begin()));
+            index = static_cast<cl_uint>(std::distance(args.begin(), it));
         }
     }, nameOrIndex(str));
 
@@ -272,7 +272,7 @@ std::tuple<
     std::vector<Primitive> minValues; minValues.reserve(traits.numComponents);
     std::vector<Primitive> maxValues; maxValues.reserve(traits.numComponents);
     for (size_t i = 0; i < traits.numComponents; ++i) {
-        auto [def, min, max] = getFromStream<Primitive, Primitive, Primitive>(str);
+        auto [max, min, def] = getFromStream<Primitive, Primitive, Primitive>(str);
         if (!def || !min || !max) {
             auto err = fmt::format("Cannot parse def/min/max for component #{} of argument {} (#{})", i, name, index);
             logger->error(err);

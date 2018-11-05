@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 
 #include <QOpenGLWidget>
 #include <QApplication>
@@ -10,6 +11,11 @@
 #include "Utility.hpp"
 
 LOGGER()
+
+static OpenCLBackendPtr backend =
+    std::make_shared<OpenCLBackend>();
+static KernelArgConfigurationStoragePtr<NoUserProperties> confStorage =
+    std::make_shared<KernelArgConfigurationStorage<NoUserProperties>>();
 
 auto id = KernelId { "newton_fractal", "default" };
 
@@ -25,18 +31,39 @@ void registerDefaultAlgorithms(OpenCLBackendPtr backend) {
     backend->registerKernel(
         id, KernelBase { newton, { "-DUSE_DOUBLE_PRECISION" } }
     );
+
+    std::string_view str = R"(
+        0    0 -1 1
+        1    0 -1 1
+        2    0 -1 1
+        3    0 -1 1
+        C    0 -1 1     0 -1 1
+        5    0  0 1
+        6    1  0 1
+        7    0.4 -10 10
+        8    100 1 1e16
+        9    100 1 1e16
+        10   0 0 1e16
+        seed   1 0 1
+    )";
+
+    confStorage->registerConfiguration(id, str.data());
 }
 
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
     logger->info(fmt::format("CL: {}", cl::Platform::getDefault().getInfo<CL_PLATFORM_NAME>()));
 
-    OpenCLBackendPtr backend = std::make_shared<OpenCLBackend>();
+
     registerDefaultAlgorithms(backend);
 
-    auto kernel = backend->compileKernel({ "newton_fractal", "default" });
+    KernelInstance<> kernel = backend->compileKernel<NoUserProperties>({ "newton_fractal", "default" });
 
-    KernelArgWidget hello(detectArgumentTypesAndNames(kernel.kernel), nullptr);
+    auto honey = detectArgumentTypesAndNames(kernel.kernel());
+
+    confStorage->findOrParseConfiguration(id, honey);
+
+    QSlider hello(nullptr);
     hello.show();
 
     return QApplication::exec();

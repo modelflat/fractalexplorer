@@ -7,16 +7,8 @@
 #include <string>
 #include <sstream>
 
-template<typename Iter>
-std::string join(Iter begin_, Iter end_, const char *sep = " ") {
-    std::ostringstream ss;
-    ss << *begin_;
-    begin_++;
-    for (; begin_ != end_; begin_++) {
-        ss << sep << *begin_;
-    }
-    return ss.str();
-}
+#include <absl/strings/str_join.h>
+#include <absl/strings/strip.h>
 
 std::shared_ptr<spdlog::logger> getOrCreateLogger(const char *name);
 

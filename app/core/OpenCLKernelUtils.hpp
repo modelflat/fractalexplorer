@@ -2,6 +2,7 @@
 #define FRACTALEXPLORER_OPENCLKERNELUTILS_HPP
 
 #include <OpenCL.hpp>
+#include <Utility.hpp>
 
 #include <variant>
 #include <utility>
@@ -292,6 +293,32 @@ struct NoUserProperties {
 
 size_t findArgIndex(const ArgNameMap&);
 
+template <typename UserT = NoUserProperties>
+using KernelArgProperties = std::vector<ArgProperties<UserT>>;
+
+template <typename UserArgProperties = NoUserProperties>
+KernelArgProperties<UserArgProperties> propertiesFromConfig(const ArgsTypesWithNames& argDict, std::string_view conf) {
+    LOGGER();
+
+    KernelArgProperties<UserArgProperties> result;
+    result.reserve(8);
+
+    std::istringstream ss { conf.data() };
+    size_t line = 0;
+    while (!ss.eof()) {
+        ++line;
+        try {
+            result.push_back( propertiesFromStream<NoUserProperties>(argDict, ss) );
+        } catch (const std::exception& e) {
+            auto err = fmt::format("L{}: error during parsing: {}", line, e.what());
+            logger->error(err);
+            throw e;
+        }
+    }
+
+    return result;
+}
+
 /**
  * Low-level cl::Kernel instance enriched by argument metainfo.
  *
@@ -300,30 +327,32 @@ size_t findArgIndex(const ArgNameMap&);
 template <typename UserArgProperties = NoUserProperties>
 class KernelInstance {
     cl::Kernel kernel_;
-    std::vector<ArgProperties<UserArgProperties>> argProps_;
-
+    KernelArgProperties<UserArgProperties> argProps_;
     ArgNameMap nameMap_;
 
     cl_uint imageArgIdx_;
     std::vector<cl_uint> dimensionalArgs_;
+
 public:
 
-    KernelInstance(cl::Kernel kernel, std::vector<ArgProperties<UserArgProperties>> props)
+    KernelInstance(cl::Kernel kernel, KernelArgProperties<UserArgProperties> props)
     : kernel_(std::move(kernel)), argProps_(std::move(props)), nameMap_(mapNamesToArgIndices(kernel))
     {
         imageArgIdx_ = detectImageArgIdx(nameMap_);
         dimensionalArgs_ = detectImageDimensionalArgIdxs(nameMap_);
     }
 
+    KernelInstance(cl::Kernel kernel) : KernelInstance(kernel, {}) {}
+
     inline cl::Kernel kernel() const { return kernel_; }
 
-    inline const std::vector<ArgProperties<UserArgProperties>> &argProps() const { return argProps_; }
+    inline const KernelArgProperties<UserArgProperties> &argProps() const { return argProps_; }
 
-    inline std::vector<ArgProperties<UserArgProperties>> &argProps() { return argProps_; }
+    inline KernelArgProperties<UserArgProperties> &argProps() { return argProps_; }
 
-    inline void argProps(const std::vector<ArgProperties<UserArgProperties>> &argProps_) { this->argProps_ = argProps_; }
+    inline void argProps(const KernelArgProperties<UserArgProperties> &argProps_) { this->argProps_ = argProps_; }
 
-    inline void argProps(std::vector<ArgProperties<UserArgProperties>> &&argProps_) { this->argProps_ = std::move(argProps_); }
+    inline void argProps(KernelArgProperties<UserArgProperties> &&argProps_) { this->argProps_ = std::move(argProps_); }
 
     inline const ArgNameMap& nameMap() const { return nameMap_; }
 

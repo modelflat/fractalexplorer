@@ -49,6 +49,7 @@ include_directories(libs/spdlog/include)
 include_directories(libs/triSYCL/include)
 include_directories(libs/asyncfuture)
 include_directories(libs/fmt/include)
+include_directories(libs/abseil-cpp)
 
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
 add_definitions("-DSOURCE_PATH_SIZE=${SOURCE_PATH_SIZE}")
@@ -60,7 +61,9 @@ include_directories(${ADDITIONAL_INCLUDES}) # TODO this is a workaround for usin
 find_package(OpenCL)
 include_directories(${OpenCL_INCLUDE_DIR})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core Qt5::Widgets ${OpenCL_LIBRARY})
+add_subdirectory(libs/abseil-cpp)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core Qt5::Widgets ${OpenCL_LIBRARY} absl::strings)
 
 if (CMAKE_BUILD_TYPE MATCHES Release)
     create_target_installer(
