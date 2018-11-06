@@ -132,17 +132,17 @@ public:
         return it->second;
     }
 
-    const std::pair<std::string, KernelArgProperties<UserArgProperties>>&
+    KernelArgProperties<UserArgProperties>
     findOrParseConfiguration(KernelId id, const ArgsTypesWithNames& argDict) {
-        const auto& [strConf, conf] = findConfiguration(id);
+        auto [strConf, conf] = findConfiguration(id);
         if (conf.empty()) {
             // TODO maybe set up a flag to know exactly if configuration was parsed?
             logger->info(fmt::format("Configuration is empty, seems like recompilation is needed"));
-            return storage_.try_emplace(id, strConf, propertiesFromConfig(argDict, strConf)).first->second;
+            return storage_.try_emplace(id, strConf, propertiesFromConfig<UserArgProperties>(argDict, strConf)).first->second.second;
         } else {
             logger->info(fmt::format("Configuration already not empty, too lazy to compile again"));
         }
-        return findConfiguration(id); // TODO optimize later
+        return findConfiguration(id).second; // TODO optimize ?
     }
 
 };

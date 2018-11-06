@@ -15,8 +15,7 @@ LOGGER()
 
 static OpenCLBackendPtr backend =
     std::make_shared<OpenCLBackend>();
-static KernelArgConfigurationStoragePtr<NoUserProperties> confStorage =
-    std::make_shared<KernelArgConfigurationStorage<NoUserProperties>>();
+static auto confStorage = std::make_shared<KernelArgConfigurationStorage<UIProperties>>();
 
 auto id = KernelId { "newton_fractal", "default" };
 
@@ -34,18 +33,21 @@ void registerDefaultAlgorithms(OpenCLBackendPtr backend) {
     );
 
     std::string_view str = R"(
-        0    0 -1 1
-        1    0 -1 1
-        2    0 -1 1
-        3    0 -1 1
-        C    0 -1 1     0 -1 1
-        5    0  0 1
-        6    1  0 1
-        7    0.4 -10 10
-        8    100 1 1e16
-        9    100 1 1e16
-        10   0 0 1e16
-        seed   1 0 1
+        0    0 -1 1                 0
+        1    0 -1 1                 0
+        2    0 -1 1                 0
+        3    0 -1 1                 0
+        C    0 -1 1     0 -1 1      0
+        5    0  0 1                 0
+        6    1  0 1                 0
+        7    0.4 -10 10             0
+        runs_count 1 1 1            1
+        points_count 256 1 8192     0
+        iter_skip   0 0 8192        0
+        seed    1 0 1               1
+        11      0 0 0               1
+        12      0 0 0 0 0 0 0 0 0   1
+        13                          1
     )";
 
     confStorage->registerConfiguration(id, str.data());
@@ -58,18 +60,12 @@ int main(int argc, char *argv[]) {
 
     registerDefaultAlgorithms(backend);
 
+    ComputableImageWidget2D img (backend, confStorage, {512, 512}, id);
+
     KernelInstance<> kernel = backend->compileKernel<NoUserProperties>({ "newton_fractal", "default" });
 
-    auto honey = detectArgumentTypesAndNames(kernel.kernel());
-
-    auto [strConf, conf] = confStorage->findOrParseConfiguration(id, honey);
-    (void)strConf;
-
-    ComputableImageWidget2D img (backend, {512, 512}, id);
-    KernelArgWidget params (honey, conf);
-
-    QSlider hello(nullptr);
-    hello.show();
+    auto* params = makeParameterWidgetForKernel(id, kernel.kernel(), confStorage);
+    params->show();
 
     return QApplication::exec();
 }

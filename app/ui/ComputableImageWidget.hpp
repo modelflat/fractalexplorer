@@ -1,36 +1,24 @@
 #ifndef FRACTALEXPLORER_COMPUTABLEIMAGEWIDGET_HPP
 #define FRACTALEXPLORER_COMPUTABLEIMAGEWIDGET_HPP
 
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QOpenGLWidget>
+#include <QWidget>
+#include <QOpenGLWidget>
 
 #include "ComputableImage.hpp"
-
-struct ArgSpecification {
-    std::string name;
-    std::string description;
-    KernelArgType argType;
-};
 
 class ComputableImageWidget : public QOpenGLWidget {
 
 public:
 
-    ComputableImageWidget(QWidget* parent = nullptr) : QOpenGLWidget(parent) {}
-
-public slots:
-
-    /**
-     * Set parameters for underlying OpenCL kernel.
-     */
-    void setParameters(const std::vector<ArgSpecification>& params);
-
-    /**
-     * Run an OpenCL job to (re)compute this image.
-     */
-    void compute();
+    ComputableImageWidget(
+        OpenCLBackendPtr backend,
+        KernelArgConfigurationStoragePtr<UIProperties> confStorage,
+        QWidget* parent = nullptr);
 
 protected:
+
+    OpenCLBackendPtr backend_;
+    KernelArgConfigurationStoragePtr<UIProperties> confStorage_;
 
     void initializeGL() override;
 
@@ -46,13 +34,23 @@ class ComputableImageWidget2D : public ComputableImageWidget, private OpenCLComp
 
 public:
 
-    ComputableImageWidget2D(OpenCLBackendPtr backend, Dim_2D::RangeType dim, KernelId kernelId, QWidget* parent = nullptr)
-    : ComputableImageWidget(parent), OpenCLComputableImage(backend, dim), kernelId_(kernelId)
-    {}
+    ComputableImageWidget2D(
+        OpenCLBackendPtr backend,
+        KernelArgConfigurationStoragePtr<UIProperties> confStorage,
+        Dim_2D::RangeType dim,
+        KernelId kernelId,
+        QWidget* parent = nullptr);
 
-};
+public slots:
 
-class ComputableImageWidget3D : public ComputableImageWidget, private OpenCLComputableImage<Dim_3D> {
+    /**
+     * Compute this image in blocking manner.
+     */
+    void compute(KernelArgs);
+
+signals:
+
+    void computed();
 
 };
 

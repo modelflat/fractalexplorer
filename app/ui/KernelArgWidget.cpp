@@ -67,7 +67,7 @@ std::optional<KernelArgValue> NumberWidget::value() {
 }
 
 KernelArgWidget::KernelArgWidget(
-    ArgsTypesWithNames &&argTypes, KernelArgProperties<UIProperties> conf,
+    ArgsTypesWithNames argTypes, KernelArgProperties<UIProperties> conf,
     QWidget *parent) : QWidget(parent) {
 
     std::transform(argTypes.begin(), argTypes.end(), std::back_inserter(argProviders), [this](auto& argTypeAndName) {
@@ -81,4 +81,12 @@ KernelArgWidget::KernelArgWidget(
     });
 
     this->setLayout(layout);
+}
+
+KernelArgWidget* makeParameterWidgetForKernel(
+    KernelId id, cl::Kernel kernel, KernelArgConfigurationStoragePtr<UIProperties> confStorage
+) {
+    auto honey = detectArgumentTypesAndNames(kernel);
+    auto conf = confStorage->findOrParseConfiguration(id, honey);
+    return new KernelArgWidget(honey, conf);
 }

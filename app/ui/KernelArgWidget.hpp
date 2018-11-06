@@ -9,6 +9,7 @@
 #include <QSlider>
 #include <QLabel>
 #include <QtWidgets/QPushButton>
+#include <app/core/OpenCLBackend.hpp>
 
 struct IArgProvider {
     virtual std::optional<KernelArgValue> value() = 0;
@@ -79,18 +80,6 @@ signals:
 
 };
 
-struct UIProperties {
-
-    bool hidden;
-
-    static UIProperties fromStream(std::istream& str) {
-        UIProperties res;
-        int t; str >> t;
-        res.hidden = t != 0;
-        return res;
-    }
-
-};
 
 class KernelArgWidget : public QWidget {
 
@@ -98,8 +87,10 @@ class KernelArgWidget : public QWidget {
 
 public:
 
-    KernelArgWidget(ArgsTypesWithNames&& argTypes, KernelArgProperties<UIProperties> conf, QWidget* parent = nullptr);
+    KernelArgWidget(ArgsTypesWithNames argTypes, KernelArgProperties<UIProperties> conf, QWidget* parent = nullptr);
 
 };
+
+KernelArgWidget* makeParameterWidgetForKernel(KernelId, cl::Kernel, KernelArgConfigurationStoragePtr<UIProperties>);
 
 #endif //FRACTALEXPLORER_KERNELARGWIDGET_HPP

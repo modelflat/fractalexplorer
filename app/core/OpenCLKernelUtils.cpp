@@ -197,7 +197,7 @@ std::vector<cl_uint> detectImageDimensionalArgIdxs(const ArgNameMap& map) {
     }
     {
         auto it = map.find("width");
-        depth = it != map.end() ? it -> second : 3;
+        depth = it != map.end() ? it->second : 3;
     }
     return { width, height, depth };
 }

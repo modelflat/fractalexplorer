@@ -308,7 +308,7 @@ KernelArgProperties<UserArgProperties> propertiesFromConfig(const ArgsTypesWithN
     while (!ss.eof()) {
         ++line;
         try {
-            result.push_back( propertiesFromStream<NoUserProperties>(argDict, ss) );
+            result.push_back( propertiesFromStream<UserArgProperties>(argDict, ss) );
         } catch (const std::exception& e) {
             auto err = fmt::format("L{}: error during parsing: {}", line, e.what());
             logger->error(err);
@@ -376,6 +376,18 @@ public:
         return detectArgumentTypesAndNames(kernel_);
     }
 
+};
+
+struct UIProperties {
+
+    bool hidden;
+
+    static UIProperties fromStream(std::istream& str) {
+        UIProperties res;
+        int t; str >> t;
+        res.hidden = t != 0;
+        return res;
+    }
 };
 
 #endif //FRACTALEXPLORER_OPENCLKERNELUTILS_HPP

@@ -73,26 +73,28 @@ public:
         recreateImageIfNeeded(backend, dimensions);
     }
 
+    template <typename KernelInstanceProperties>
     void compute(OpenCLBackendPtr backend, KernelId id, const KernelArgs& args) {
         auto queue = backend->currentQueue();
-        auto compiled = backend->compileKernel(kernelId);
-        auto localRange = backend->findKernelBase(kernelId).localRange;
+        auto compiled = backend->compileKernel<KernelInstanceProperties>(id);
+//        auto localRange = backend->findKernelBase(id).localRange;
+        auto localRange = cl::NDRange {};
 
         recreateImageIfNeeded(backend, dimensions_);
 
-        compiled.kernel.setArg(compiled.imageArgIdx, image_);
+        compiled.kernel().setArg(compiled.imageArg(), image_);
 
-        if (DimensionPolicy::N >= compiled.dimensionalArgs.size()) {
+        if (DimensionPolicy::N >= compiled.dimensionalArgs().size()) {
             throw std::runtime_error("Image is of higher dimensionality than expected");
         }
 
         for (size_t i = 0; i < DimensionPolicy::N; ++i) {
-            compiled.kernel.setArg(compiled.dimensionalArgs[i]);
+            compiled.kernel().setArg(compiled.dimensionalArgs()[i], dimensions_[i]);
         }
 
-        applyArgsToKernel(compiled, args);
+        applyArgsToKernel(compiled.kernel(), args.begin(), args.end());
 
-        DimensionPolicy::enqueueKernel(backend->currentQueue(), compiled.kernel, localRange, dimensions_);
+        DimensionPolicy::enqueueKernel(backend->currentQueue(), compiled.kernel(), localRange, dimensions_);
     }
 
     /**
