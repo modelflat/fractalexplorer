@@ -38,9 +38,11 @@ ComputableImageWidget2D::ComputableImageWidget2D(
 : ComputableImageWidget(backend, std::move(confStorage), parent),
   OpenCLComputableImage<Dim_2D>(backend, dim),
   kernelId_(std::move(kernelId)) {
+
     logger->info(fmt::format("Created new ComputableImageWidget2D for displaying KernelId {},{}",
         kernelId_.src, kernelId_.settings)
     );
+    
 }
 
 void ComputableImageWidget2D::compute(KernelArgs args) {

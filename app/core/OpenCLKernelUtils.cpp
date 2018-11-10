@@ -118,6 +118,40 @@ std::string to_string(const cl::Kernel &kernel) {
     return fmt::format("Kernel[{}]", kernel.getInfo<CL_KERNEL_FUNCTION_NAME>());
 }
 
+std::string to_string(KernelArgValue val) {
+    std::ostringstream str {};
+    str << "KernelArgValue { " ;
+    std::visit([&str](auto val) mutable {
+        using T = decltype(val);
+        if constexpr (
+            std::is_same_v<T, cl_int>
+            || std::is_same_v<T, cl_long>
+            || std::is_same_v<T, cl_double>
+            || std::is_same_v<T, cl_float>
+        ) {
+            str << val;
+            return;
+        }
+        if constexpr (
+            std::is_same_v<T, cl_float2>
+            || std::is_same_v<T, cl_double2>
+        ) {
+            str << val.x << ',' << val.y;
+            return;
+        }
+        if constexpr (
+            std::is_same_v<T, cl_float3>
+            || std::is_same_v<T, cl_double3>
+        ) {
+            str << val.x << ',' << val.y << ',' << val.z;
+            return;
+        }
+        str << "<something>";
+    }, val.value);
+    str << " }";
+    return str.str();
+}
+
 void setArg(cl::Kernel &kernel, cl_uint idx, const AnyType &value) {
     std::visit(
         [&kernel, idx](auto &&value) {

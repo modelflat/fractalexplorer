@@ -59,6 +59,7 @@ int main(int argc, char *argv[]) {
 
     registerDefaultAlgorithms(backend);
 
+
     ComputableImageWidget2D img (backend, confStorage, {512, 512}, id);
 
     KernelInstance<> kernel = backend->compileKernel<NoUserProperties>({ "newton_fractal", "default" });

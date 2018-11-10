@@ -44,10 +44,15 @@ class KernelArgWidget : public QWidget {
     Q_OBJECT
 
     QVector<Slider*> argProviders;
+    KernelArgs cachedArgValues;
 
 public:
 
     KernelArgWidget(ArgsTypesWithNames argTypes, KernelArgProperties<UIProperties> conf, QWidget* parent = nullptr);
+
+signals:
+
+    void valuesChanged(KernelArgs);
 
 };
 

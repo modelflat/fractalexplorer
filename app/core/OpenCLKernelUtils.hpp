@@ -66,6 +66,9 @@ struct KernelArgValue {
 
     AnyType value;
 
+    KernelArgValue()
+        : value(std::in_place_type<cl_int>, 0) {}
+
     KernelArgValue(bool v)
         : value(std::in_place_type<cl_int>, static_cast<cl_int>(v ? 1 : 0)) {}
 
@@ -120,6 +123,8 @@ struct KernelArgValue {
     }
 
 };
+
+std::string to_string(KernelArgValue);
 
 /**
  * Map of argument names to their indices.
