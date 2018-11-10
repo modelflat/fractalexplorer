@@ -138,7 +138,9 @@ public:
         if (conf.empty()) {
             // TODO maybe set up a flag to know exactly if configuration was parsed?
             logger->info(fmt::format("Configuration is empty, seems like recompilation is needed"));
-            return storage_.try_emplace(id, strConf, propertiesFromConfig<UserArgProperties>(argDict, strConf)).first->second.second;
+            auto val = propertiesFromConfig<UserArgProperties>(argDict, strConf); // TODO fix
+//            return storage_.try_emplace(id, strConf, ).first->second.second;
+            return val;
         } else {
             logger->info(fmt::format("Configuration already not empty, too lazy to compile again"));
         }

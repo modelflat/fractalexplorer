@@ -45,7 +45,6 @@ void registerDefaultAlgorithms(OpenCLBackendPtr backend) {
         points_count 256 1 8192     0
         iter_skip   0 0 8192        0
         seed    1 0 1               1
-        11      0 0 0               1
         12      0 0 0 0 0 0 0 0 0   1
         13                          1
     )";
@@ -65,6 +64,7 @@ int main(int argc, char *argv[]) {
     KernelInstance<> kernel = backend->compileKernel<NoUserProperties>({ "newton_fractal", "default" });
 
     auto* params = makeParameterWidgetForKernel(id, kernel.kernel(), confStorage);
+    params->setGeometry(200, 200, 640, 480);
     params->show();
 
     return QApplication::exec();
