@@ -26,34 +26,34 @@ static const std::unordered_map<KernelArgType, KernelArgTypeTraits> typeTraitsMa
     {
         { KernelArgType::Int32,          { 1, [](const std::vector<Primitive>& vec){
             return static_cast<int32_t>(vec[0]);
-        } }},
+        }, KernelArgTypeClass::Integer }},
         { KernelArgType::Int64,          { 1, [](const std::vector<Primitive>& vec){
             return static_cast<int64_t>(vec[0]);
-        } }},
+        }, KernelArgTypeClass::Integer }},
         { KernelArgType::Float32,        { 1, [](const std::vector<Primitive>& vec){
             return static_cast<float>(vec[0]);
-        } }},
-        { KernelArgType::Float64,        { 1, [](const std::vector<Primitive>& vec){
+        }, KernelArgTypeClass::FloatingPoint }},
+        { KernelArgType::Float64,        { 1, [](const std::vector<Primitive>& vec) {
             return static_cast<double>(vec[0]);
-        } }},
+        }, KernelArgTypeClass::FloatingPoint }},
         { KernelArgType::Vector2Float32, { 2, [](const std::vector<Primitive>& vec){
             return cl_float2 { static_cast<float>(vec[0]), static_cast<float>(vec[1]) };
-        } }},
+        }, KernelArgTypeClass::FloatingPoint }},
         { KernelArgType::Vector2Float64, { 2, [](const std::vector<Primitive>& vec){
             return cl_double2 { static_cast<double>(vec[0]), static_cast<double>(vec[1]) };
-        } }},
+        }, KernelArgTypeClass::FloatingPoint }},
         { KernelArgType::Vector3Float32, { 3, [](const std::vector<Primitive>& vec){
             return cl_float3 { static_cast<float>(vec[0]), static_cast<float>(vec[1]), static_cast<float>(vec[2]) };
-        } }},
+        }, KernelArgTypeClass::FloatingPoint }},
         { KernelArgType::Vector3Float64, { 3, [](const std::vector<Primitive>& vec){
             return cl_double3 { static_cast<double>(vec[0]), static_cast<double>(vec[1]), static_cast<double>(vec[2]) };
-        } }},
+        }, KernelArgTypeClass::FloatingPoint }},
         { KernelArgType::Image,          { 0, [](const std::vector<Primitive>& vec){
             return vec.empty();
-        } }},
+        }, KernelArgTypeClass::Memory }},
         { KernelArgType::Buffer,         { 0, [](const std::vector<Primitive>& vec){
             return vec.empty();
-        } }}
+        }, KernelArgTypeClass::Memory }}
     }
 };
 
@@ -65,6 +65,53 @@ KernelArgTypeTraits findTypeTraits(KernelArgType type) {
         throw std::runtime_error(err);
     }
     return it->second;
+}
+
+AnyScalarType getVectorComponent(size_t idx, AnyType val) {
+    return std::visit([idx](auto val) {
+        using T = decltype(val);
+        bool error = false;
+        if constexpr (
+            std::is_same_v<T, cl_int>
+            || std::is_same_v<T, cl_long>
+            || std::is_same_v<T, cl_float>
+            || std::is_same_v<T, cl_double>
+        ) {
+            if (idx == 0) {
+                return AnyScalarType { val };
+            } else {
+                error = true;
+            }
+        }
+        if constexpr (
+            std::is_same_v<T, cl_float2>
+            || std::is_same_v<T, cl_double2>
+        ) {
+            if (idx <= 1) {
+                return AnyScalarType { val.s[idx] };
+            } else {
+                error = true;
+            }
+        }
+        if constexpr (
+            std::is_same_v<T, cl_float3>
+            || std::is_same_v<T, cl_double3>
+            ) {
+            if (idx <= 2) {
+                return AnyScalarType { val.s[idx] };
+            } else {
+                error = true;
+            }
+        }
+        if (error) {
+            auto err = fmt::format("Index out of range: {}", idx);
+            logger->error(err);
+            throw std::runtime_error(err);
+        }
+
+        logger->error("std::visit visitor is not exhaustive");
+        return AnyScalarType { 0 };
+    }, val);
 }
 
 std::string to_string(const cl::Kernel &kernel) {

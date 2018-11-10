@@ -26,6 +26,13 @@ using AnyType = std::variant<
     cl_double3
 >;
 
+using AnyScalarType = std::variant<
+    cl_int,
+    cl_long,
+    cl_float,
+    cl_double
+>;
+
 /**
  * Most general type among possible primitives in AnyType.
  */
@@ -171,12 +178,21 @@ enum class KernelArgType {
     Buffer          = 10,
 };
 
+enum class KernelArgTypeClass {
+    Memory, FloatingPoint, Integer
+};
+
 struct KernelArgTypeTraits {
     using VectorConverter = std::function<KernelArgValue(const std::vector<Primitive>&)>;
 
     const size_t numComponents;
     const VectorConverter fromVector;
+    const KernelArgTypeClass klass;
 };
+
+KernelArgTypeTraits findTypeTraits(KernelArgType type);
+
+AnyScalarType getVectorComponent(size_t idx, AnyType val);
 
 using ArgsTypesWithNames = std::vector<std::pair<KernelArgType, std::string>>;
 
