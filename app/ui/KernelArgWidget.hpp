@@ -25,7 +25,7 @@ class Slider : public ArgProviderWidget {
     Q_OBJECT
 
     KernelArgType type_;
-    std::vector<QSlider*> sliders_;
+    QVector<QSlider*> sliders_;
 
 public:
 
@@ -48,7 +48,8 @@ class KernelArgWidget : public QWidget {
 
 public:
 
-    KernelArgWidget(ArgsTypesWithNames argTypes, KernelArgProperties<UIProperties> conf, QWidget* parent = nullptr);
+    KernelArgWidget(ArgsTypesWithNames argTypes, KernelArgProperties<UIProperties> conf,
+        QWidget* parent = nullptr);
 
 signals:
 
@@ -56,6 +57,7 @@ signals:
 
 };
 
-KernelArgWidget* makeParameterWidgetForKernel(KernelId, cl::Kernel, KernelArgConfigurationStoragePtr<UIProperties>);
+KernelArgWidget* makeParameterWidgetForKernel(KernelId, cl::Kernel, KernelArgConfigurationStoragePtr<UIProperties>,
+    QWidget* parent = nullptr);
 
 #endif //FRACTALEXPLORER_KERNELARGWIDGET_HPP

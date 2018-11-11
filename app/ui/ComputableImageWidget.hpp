@@ -78,19 +78,7 @@ public:
         Range<2> size,
         KernelId id,
         QWidget* parent = nullptr
-    ) : QWidget(parent),
-        kernel_(backend->compileKernel<UIProperties>({ "newton_fractal", "default" })) {
-        image = new ComputableImageWidget2D(backend, confStorage, size, id);
-        args = makeParameterWidgetForKernel(id, kernel_.kernel(), confStorage);
-
-        auto* layout = new QHBoxLayout;
-        layout->addWidget(image);
-        layout->addWidget(args);
-
-        connect(args, &KernelArgWidget::valuesChanged, image, &ComputableImageWidget2D::compute);
-
-        this->setLayout(layout);
-    }
+    );
 
 };
 

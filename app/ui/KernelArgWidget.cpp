@@ -44,24 +44,25 @@ void applyValuesToSlider(QSlider* slider, size_t componentIdx, KernelArgTypeTrai
 Slider::Slider(KernelArgType type, KernelArgValue min, KernelArgValue max, KernelArgValue def, QWidget *parent)
 : ArgProviderWidget(parent), type_(type) {
     auto traits = findTypeTraits(type);
-    sliders_ = std::vector<QSlider *>(traits.numComponents);
+
+    sliders_ = QVector<QSlider *>(traits.numComponents);
 
     auto* lay = new QVBoxLayout;
 
     for (size_t i = 0; i < sliders_.size(); ++i) {
-        auto *sl = new QSlider(Qt::Orientation::Horizontal);
+        auto *slider = new QSlider(Qt::Orientation::Horizontal);
 
-        applyValuesToSlider(sl, i, traits, min, max, def);
+        applyValuesToSlider(slider, i, traits, min, max, def);
 
-        connect(sl, &QSlider::valueChanged, [this](int) {
+        connect(slider, &QSlider::valueChanged, [this](int) {
             emit this->valueChanged(*value());
         });
 
-        sliders_[i] = sl;
+        sliders_[i] = slider;
 
         auto* labelPack = new QHBoxLayout;
         labelPack->addWidget(new QLabel(QString::fromStdString(fmt::format("s{}", i))));
-        labelPack->addWidget(sl);
+        labelPack->addWidget(slider);
 
         lay->addLayout(labelPack);
     }
@@ -96,18 +97,18 @@ KernelArgWidget::KernelArgWidget(
         auto [type, name] = argTypes[i];
         if (findTypeTraits(type).klass != KernelArgTypeClass::Memory) {
             if (!conf[i].userProps().hidden) {
-                argProviders.push_back(
-                    new Slider(type, conf[i].min(), conf[i].max(), conf[i].defaultValue(), this)
-                );
+                auto* slider = new Slider(type, conf[i].min(), conf[i].max(), conf[i].defaultValue());
+                argProviders.push_back(slider);
+
                 auto *gb = new QGroupBox(QString::fromStdString(name));
-                auto *insideGB = new QHBoxLayout;
-                insideGB->addWidget(argProviders.back());
+                auto *insideGB = new QVBoxLayout;
+                insideGB->addWidget(slider);
+                insideGB->setMargin(0);
                 gb->setLayout(insideGB);
 
                 layout->addWidget(gb);
 
-                connect(
-                    argProviders.back(), &Slider::valueChanged, [this, i](auto val) {
+                connect(slider, &Slider::valueChanged, [this, i](auto val) {
                         cachedArgValues[i] = val;
                         emit this->valuesChanged(cachedArgValues);
                     }
@@ -118,21 +119,13 @@ KernelArgWidget::KernelArgWidget(
     }
 
     this->setLayout(layout);
-
-//    connect(this, &KernelArgWidget::valuesChanged, [](auto values) {
-//        logger->info(" === New values === ");
-//        std::for_each(values.begin(), values.end(), [](auto val) {
-//            std::visit([&val](auto val_) {
-//                logger->info(fmt::format("{} : {}", val_, to_string(val.second)));
-//            }, val.first);
-//        });
-//    });
 }
 
 KernelArgWidget* makeParameterWidgetForKernel(
-    KernelId id, cl::Kernel kernel, KernelArgConfigurationStoragePtr<UIProperties> confStorage
+    KernelId id, cl::Kernel kernel, KernelArgConfigurationStoragePtr<UIProperties> confStorage,
+    QWidget* parent
 ) {
     auto honey = detectArgumentTypesAndNames(kernel);
     auto conf = confStorage->findOrParseConfiguration(id, honey);
-    return new KernelArgWidget(honey, conf);
+    return new KernelArgWidget(honey, conf, parent);
 }

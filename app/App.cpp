@@ -3,6 +3,7 @@
 
 #include <QOpenGLWidget>
 #include <QApplication>
+#include <QMainWindow>
 #include <QPushButton>
 #include <app/ui/KernelArgWidget.hpp>
 #include <app/ui/ComputableImageWidget.hpp>
@@ -58,10 +59,13 @@ int main(int argc, char *argv[]) {
 
     registerDefaultAlgorithms(backend);
 
+    QMainWindow w;
+
     ParameterizedComputableImageWidget img(backend, confStorage, {512, 512}, id);
 
-    img.setGeometry(400, 400, 640, 480);
-    img.show();
+    w.setCentralWidget(&img);
+
+    w.show();
 
     return QApplication::exec();
 }
