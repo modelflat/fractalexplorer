@@ -144,7 +144,6 @@ using KernelArgs = std::unordered_map<std::variant<std::string, size_t>, KernelA
 /**
  * Apply arguments to kernel.
  */
-
 template <typename Iter>
 void applyArgsToKernel(cl::Kernel &kernel, Iter begin, Iter end) {
     auto nameMap = mapNamesToArgIndices(kernel);
@@ -152,16 +151,19 @@ void applyArgsToKernel(cl::Kernel &kernel, Iter begin, Iter end) {
         begin, end, [&](const auto &value) {
             std::visit(
                 [&](auto &&arg) {
-                    using Type = decltype(arg);
+                    using Type = typename std::decay<decltype(arg)>::type;
                     if constexpr (std::is_same_v<Type, std::string>) {
                         auto val = nameMap.find(arg);
                         if (val == nameMap.end()) {
                             throw std::invalid_argument(fmt::format("Kernel has no argument named \"{}\"", arg));
                         }
                         value.second.apply(kernel, val->second);
+                        return;
                     } else if constexpr (std::is_same_v<Type, size_t>) {
                         value.second.apply(kernel, static_cast<cl_uint>(arg));
+                        return;
                     }
+                    throw std::runtime_error("Visitor incomplete"); // TODO more friendly description
                 }, value.first);
         });
 }

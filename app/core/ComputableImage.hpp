@@ -65,6 +65,7 @@ struct Dim_3D {
 
 template <typename DimensionPolicy>
 class OpenCLComputableImage {
+
 public:
     using RangeType = typename DimensionPolicy::RangeType;
     using ImageType = typename DimensionPolicy::ImageType;
@@ -82,17 +83,21 @@ public:
 
         recreateImageIfNeeded(backend, dimensions_);
 
+        applyArgsToKernel(compiled.kernel(), args.begin(), args.end());
+
         compiled.kernel().setArg(compiled.imageArg(), image_);
 
         if (DimensionPolicy::N >= compiled.dimensionalArgs().size()) {
-            throw std::runtime_error("Image is of higher dimensionality than expected");
+            logger->warn(
+                fmt::format("# of dimensional args found ({}) < # of dimensions ({}), might be error",
+                    compiled.dimensionalArgs().size(), DimensionPolicy::N
+                )
+            );
         }
 
-        for (size_t i = 0; i < DimensionPolicy::N; ++i) {
+        for (size_t i = 0; i < compiled.dimensionalArgs().size(); ++i) {
             compiled.kernel().setArg(compiled.dimensionalArgs()[i], dimensions_[i]);
         }
-
-        applyArgsToKernel(compiled.kernel(), args.begin(), args.end());
 
         DimensionPolicy::enqueueKernel(backend->currentQueue(), compiled.kernel(), localRange, dimensions_);
     }

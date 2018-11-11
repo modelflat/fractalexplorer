@@ -135,7 +135,7 @@ kernel void newton_fractal(
     // color. this color will only be used as static!
     float3 color_in,
     // image buffer for output
-    write_only image2d_t out_image)
+    write_only image2d_t image)
 {
     // color
     #if (DYNAMIC_COLOR)
@@ -150,8 +150,8 @@ kernel void newton_fractal(
     // spans, scales, sizes
     real span_x = max_x - min_x;
     real span_y = max_y - min_y;
-    int image_width = get_image_width(out_image);
-    int image_height = get_image_height(out_image);
+    int image_width = get_image_width(image);
+    int image_height = get_image_height(image);
     real scale_x = span_x / image_width;
     real scale_y = span_y / image_height;
     int2 coord;
@@ -214,9 +214,9 @@ kernel void newton_fractal(
                 #endif
                 if (coord.x < image_width && coord.y < image_height && coord.x >= 0 && coord.y >= 0) {
                     #if DYNAMIC_COLOR
-                        write_imagef(out_image, coord, (float4)(hsv2rgb( color_hsv ), 1.0));
+                        write_imagef(image, coord, (float4)(hsv2rgb( color_hsv ), 1.0));
                     #else
-                        write_imagef(out_image, coord, color);
+                        write_imagef(image, coord, color);
                     #endif
                     frozen = 0;
                 } else {

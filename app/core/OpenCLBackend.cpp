@@ -14,9 +14,6 @@ OpenCLBackend::OpenCLBackend() {
 }
 
 cl::Kernel OpenCLBackend::compileCLKernel(KernelId id) {
-    logger->info(
-        fmt::format("Kernel compilation requested ({}, {}). Looking in cache...", id.src, id.settings)
-                );
     auto foundInCache = this->compileCache_.find(CompilationContext { id, ctx });
     if (foundInCache != compileCache_.end()) {
         logger->info(
@@ -25,8 +22,12 @@ cl::Kernel OpenCLBackend::compileCLKernel(KernelId id) {
         return foundInCache->second;
     }
 
+    logger->info(fmt::format("Kernel ({}, {}) not in cache, compiling...", id.src, id.settings));
+
     // build a kernel from base
-    return { findKernelBase(id).build(ctx), id.src.c_str() };
+    return this->compileCache_.try_emplace(
+        CompilationContext {id, ctx}, findKernelBase(id).build(ctx), id.src.c_str()
+    ).first->second;
 }
 
 const KernelBase &OpenCLBackend::findKernelBase(KernelId id) const {

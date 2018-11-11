@@ -56,17 +56,12 @@ int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
     logger->info(fmt::format("CL: {}", cl::Platform::getDefault().getInfo<CL_PLATFORM_NAME>()));
 
-
     registerDefaultAlgorithms(backend);
 
+    ParameterizedComputableImageWidget img(backend, confStorage, {512, 512}, id);
 
-    ComputableImageWidget2D img (backend, confStorage, {512, 512}, id);
-
-    KernelInstance<> kernel = backend->compileKernel<NoUserProperties>({ "newton_fractal", "default" });
-
-    auto* params = makeParameterWidgetForKernel(id, kernel.kernel(), confStorage);
-    params->setGeometry(200, 200, 640, 480);
-    params->show();
+    img.setGeometry(400, 400, 640, 480);
+    img.show();
 
     return QApplication::exec();
 }

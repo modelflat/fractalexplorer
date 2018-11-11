@@ -267,20 +267,21 @@ cl_uint detectImageArgIdx(const ArgNameMap& map) {
 }
 
 std::vector<cl_uint> detectImageDimensionalArgIdxs(const ArgNameMap& map) {
-    cl_uint width, height, depth;
+    std::vector<cl_uint> res;
+    res.reserve(4);
     {
         auto it = map.find("width");
-        width = it != map.end() ? it->second : 1;
+        if (it != map.end()) res.push_back(it->second);
     }
     {
         auto it = map.find("height");
-        height = it != map.end() ? it->second : 2;
+        if (it != map.end()) res.push_back(it->second);
     }
     {
-        auto it = map.find("width");
-        depth = it != map.end() ? it->second : 3;
+        auto it = map.find("depth");
+        if (it != map.end()) res.push_back(it->second);
     }
-    return { width, height, depth };
+    return res;
 }
 
 /**
