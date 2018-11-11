@@ -111,6 +111,10 @@ public:
         backend->currentQueue().enqueueFillImage(image_, color, origin, region);
     }
 
+protected:
+
+    inline ImageType image() const { return image_; }
+
 private:
 
     void recreateImageIfNeeded(OpenCLBackendPtr backend, RangeType dimensions) {

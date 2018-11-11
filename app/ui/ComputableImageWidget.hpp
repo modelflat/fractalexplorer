@@ -4,40 +4,25 @@
 #include <QWidget>
 #include <QOpenGLWidget>
 #include <QHBoxLayout>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLTexture>
 
 #include "ComputableImage.hpp"
 #include "KernelArgWidget.hpp"
 
-
-class ComputableImageWidget : public QOpenGLWidget {
+class ComputableImageWidget2D : public QOpenGLWidget, private OpenCLComputableImage<Dim_2D> {
 
     Q_OBJECT
-
-public:
-
-    ComputableImageWidget(
-        OpenCLBackendPtr backend,
-        KernelArgConfigurationStoragePtr<UIProperties> confStorage,
-        QWidget* parent = nullptr);
-
-protected:
 
     OpenCLBackendPtr backend_;
     KernelArgConfigurationStoragePtr<UIProperties> confStorage_;
-
-    void initializeGL() override;
-
-    void resizeGL(int w, int h) override;
-
-    void paintGL() override;
-
-};
-
-class ComputableImageWidget2D : public ComputableImageWidget, private OpenCLComputableImage<Dim_2D> {
-
-    Q_OBJECT
-
     const KernelId kernelId_;
+
+    QOpenGLShaderProgram program;
+    GLuint vertexBuffer, texture;
+    Range<2> size_;
+
+    std::vector<GLuint> pixelStorage_;
 
 public:
 
@@ -58,6 +43,14 @@ public slots:
 signals:
 
     void computed();
+
+protected:
+
+    void initializeGL() override;
+
+    void resizeGL(int w, int h) override;
+
+    void paintGL() override;
 
 };
 
